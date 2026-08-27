@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ---------- Estilos Personalizados (Fondo Blanco Elegante + Accesibilidad) ----------
+# ---------- Estilos Personalizados (Fondo Blanco + Accesibilidad) ----------
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -169,7 +169,6 @@ def text_to_speech(src_lang, dest_lang, text_data, tld_code):
     
     tts = gTTS(trans_text, lang=dest_lang, tld=tld_code, slow=False)
     
-    # Sanitizar nombre de archivo
     safe_prefix = re.sub(r'[^a-zA-Z0-9]', '', text_data[:15]).strip()
     if not safe_prefix:
         safe_prefix = "audio"
@@ -186,6 +185,12 @@ st.markdown('<p class="hero-subtitle">Captura texto desde tu cámara o sube un a
 
 # ---------- Barra Lateral (Configuración) ----------
 with st.sidebar:
+    # Carga de la imagen personalizada traductor2.png
+    if os.path.exists("traductor2.png"):
+        st.image("traductor2.png", width=140)
+    else:
+        st.info("🖼️ Guarda tu archivo como 'traductor2.png' en la misma carpeta del script.")
+
     st.header("🛠️ Configuración")
     
     st.subheader("1. Fuente de Imagen")
@@ -202,7 +207,7 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("3. Parámetros de Traducción")
     in_lang_name = st.selectbox("Idioma de origen (Imagen):", list(IDIOMAS.keys()), index=0)
-    out_lang_name = st.selectbox("Idioma de destino (Traducción):", list(IDIOMAS.keys()), index=2) # Italiano por defecto
+    out_lang_name = st.selectbox("Idioma de destino (Traducción):", list(IDIOMAS.keys()), index=2)  # Italiano
     accent_name = st.selectbox("Acento de audio:", list(ACENTOS.keys()), index=0)
     
     display_output_text = st.checkbox("Mostrar texto traducido", value=True)
@@ -224,7 +229,6 @@ else:
         image = Image.open(uploaded_file)
         img_np = np.array(image)
         
-        # Convertir a formato OpenCV BGR si viene en RGB o RGBA
         if len(img_np.shape) == 3 and img_np.shape[2] == 4:
             img_np = cv2.cvtColor(img_np, cv2.COLOR_RGBA2RGB)
             
@@ -247,7 +251,6 @@ if img_rgb is not None:
         try:
             with st.spinner("Extrayendo texto de la imagen..."):
                 ocr_lang_code = IDIOMAS[in_lang_name]
-                # Ajuste de código de idioma para Tesseract (Mandarín utiliza chi_sim)
                 tess_lang = "chi_sim" if ocr_lang_code == "zh-cn" else ocr_lang_code
                 
                 texto_extraido = pytesseract.image_to_string(img_rgb, lang=tess_lang)
